@@ -1,0 +1,35 @@
+name: Build New Relic Log Forwarder zip archive for lambda function
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-2
+  ECR_REPOSITORY: notus
+
+jobs:
+  build:
+    name: Build and upload image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies, build project
+        run: |
+          mkdir ./build
+          cp src/requirements.txt ./build
+          cd ./build
+          pip install --no-cache-dir -r requirements.txt --target .
+          cp -r ../src/. .
+    
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: newrelic-logger
+          path: ./build
